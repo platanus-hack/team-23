@@ -19,7 +19,7 @@ class OpenAlexClient:
 
 
 def get_works_by_keywords(keywords: list[str], select: str | None = None, per_page = PER_PAGE_LIMIT):
-    select = select or 'id,doi,title,authorships,abstract_inverted_index,publication_year'
+    select = select or 'id,doi,title,authorships,abstract_inverted_index,publication_year,publication_date,cited_by_count'
     query = ' OR '.join(keywords)
     params = {
         'search': query,
