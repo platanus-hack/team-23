@@ -64,7 +64,7 @@ def inverted_index_to_text(inverted_idx: dict):
 def query():
     works_partial = []
     question = request.args.get("question")
-    per_page = request.args.get("per_page")
+    per_page = int(request.args.get("per_page", 100))
     if per_page > 100:
         per_page = 100
 
