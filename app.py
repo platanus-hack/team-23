@@ -1,8 +1,15 @@
 from flask import Flask, request, jsonify
 from constants import OPEN_ALEX_API_URL
+from flask_cors import CORS
 import requests
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 
 app = Flask(__name__)
+cors = CORS(app)
 
 
 @app.route("/")
@@ -43,7 +50,6 @@ def inverted_index_to_text(inverted_idx: dict):
         reconstructed_string.append(term)
 
     return ' '.join(reconstructed_string)
-
 
 
 @app.route('/query', methods=['GET'])
