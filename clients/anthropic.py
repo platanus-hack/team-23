@@ -19,7 +19,7 @@ class AnthropicClient:
     def _create_message_for_claude(self, content: str, model: str) -> str:
         try:
             return self.client.messages.create(
-                max_tokens=1024,
+                max_tokens=3000,
                 temperature=0.5,
                 messages=[
                     {
