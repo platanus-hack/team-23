@@ -78,77 +78,10 @@ def query():
         return jsonify({"error": "question parameter is required"}), 400
 
     # PROMPT TO GET TERMS FROM A QUESTION
-    terms = """
-        You are an AI assistant tasked with extracting key scientific information from user-submitted queries in an educational scientific research tool. Your goal is to identify the main object(s) of study and generate strings that could be used to filter scientific articles by title in a large database of millions of publications.
+    terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
+    
 
-        Here is the user query you need to analyze:
-
-        <query>
-        {{QUERY}}
-        </query>
-
-        Follow these steps to complete the task:
-
-        1. Carefully analyze the query to identify the main object(s) of study. These are the primary scientific concepts, phenomena, or entities that the query is focused on.
-
-        2. Based on the identified object(s) of study, generate four keywords that meet the following criteria:
-        - Consist of the object(s) of study and/or their synonyms
-        - Are concise and specific
-        - Could plausibly be found within the title of a scientific article on the topic
-
-        3. Ensure that the keywords are distinct from each other and capture different aspects of the topic if possible.
-
-        4. If the query is too vague or broad, focus on the most specific scientific concepts mentioned or implied.
-
-        5. If the query contains non-scientific terms, translate them into their closest scientific equivalents when generating keywords.
-
-        Present your results in a JSON object in the following format:
-
-        <output_format>
-        {
-        "keywords": [
-        "first keyword",
-        "second keyword",
-        "third keyword",
-        "fourth keyword"
-        ]
-        }
-        </output_format>
-
-        Examples:
-
-        Query: 'How do black holes affect the space-time continuum?'
-        Output:
-        {
-        "keywords": [
-        "black holes",
-        "space-time continuum",
-        "gravitational effects",
-        "singularities"
-        ]
-        }
-
-        Query: 'What are the latest advancements in renewable energy storage?'
-        Output:
-        {
-        "keywords": [
-        "renewable energy storage",
-        "battery technology",
-        "grid-scale storage",
-        "energy efficiency"
-        ]
-        }
-
-        Important considerations:
-        - Ensure that each keyword is unique and not a repetition of another.
-        - Avoid overly broad terms that wouldn't effectively filter scientific articles.
-        - If the query mentions a specific application or context, include at least one keyword related to that context.
-        - If possible, include both general and specific terms related to the topic to capture a range of relevant articles.
-
-        Provide your answer in the specified JSON format, enclosed in <answer> tags.
-    """
-
-    terms = terms.replace("{{QUERY}}", question)
+    terms = terms_prompt.replace("{{QUERY}}", question)
     terms_ans = create_message_for_claude(content=terms)
     ans = extract_tag_content(text=terms_ans.content[0].text, tag_name=TAG_NAME)
     terms = json.loads(ans)
@@ -172,8 +105,7 @@ def query():
     if not works_partial:
         return jsonify({"error": "failed to get works"}), 500
 
-    # SUMMARIZE PROMPT
-
+    # # SUMMARIZE PROMPT
     return jsonify(
         {
             "works": works_partial,
