@@ -94,7 +94,9 @@ def query():
             "doi": work["doi"],
             "title": work["title"],
             "abstract": (
-                get_first_n_words(inverted_index_to_text(inverted_idx=work["abstract_inverted_index"]))
+                get_first_n_words(
+                    inverted_index_to_text(inverted_idx=work["abstract_inverted_index"])
+                )
             ),
             "pub_year": work["publication_year"],
         }
@@ -110,10 +112,16 @@ def query():
     summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(works_partial))
     summary_prompt = summary_prompt.replace("{{INPUT}}", question)
     summary_response = send_prompt_to_clients(prompt=summary_prompt)
-    summary = extract_tag_content(text=summary_response.content[0].text, tag_name=TAG_NAME)
+    try:
+        summary = extract_tag_content(text=summary_response.content[0].text, tag_name=TAG_NAME)
+        summary = json.loads(summary)
+    except json.decoder.JSONDecodeError:
+        summary = "Failed to get summary"
+
     return jsonify(
         {
-            "summary": json.loads(summary),
+            "summary": summary,
+            "keywords": terms["keywords"],
             "works_partial": [
                 {
                     "doi": work["doi"],
