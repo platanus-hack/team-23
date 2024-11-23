@@ -15,11 +15,11 @@ app = Flask(__name__)
 cors = CORS(app)
 
 
-def get_works_by_keywords(keywords):
+def get_works_by_keywords(keywords, per_page = 100):
     query = ' OR '.join(keywords)
     params = {
         'search': query,
-        'per_page': 100,
+        'per_page': per_page,
         'filter': 'has_abstract:true',
         'select': 'id,doi,title,authorships,abstract_inverted_index,publication_year',
     }
@@ -64,6 +64,10 @@ def inverted_index_to_text(inverted_idx: dict):
 def query():
     works_partial = []
     question = request.args.get("question")
+    per_page = request.args.get("per_page")
+    if per_page > 100:
+        per_page = 100
+
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
 
@@ -145,7 +149,7 @@ def query():
     if not terms:
         return jsonify({"error": "failed to get terms"}), 500
 
-    works = get_works_by_keywords(keywords=terms["keywords"])
+    works = get_works_by_keywords(keywords=terms["keywords"], per_page=per_page)
 
     works_partial = [
         {
