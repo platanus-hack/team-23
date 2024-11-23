@@ -9,8 +9,8 @@ class AnthropicClient:
         "claude-3-5-sonnet-20241022",
         "claude-3-5-haiku-20241022"
     ]
-    POWERFUL_MODEL = "claude-3-5-sonnet-20241022"
-    LIGHT_MODEL = "claude-3-5-haiku-20241022"
+    POWERFUL_MODELS = ["claude-3-5-sonnet-20241022"]
+    LIGHT_MODELS = ["claude-3-5-haiku-20241022"]
 
     client = Anthropic(
         api_key=os.environ["ANTHROPIC_API_KEY"],
@@ -32,13 +32,18 @@ class AnthropicClient:
         except (RateLimitError, APITimeoutError, APIError):
             return None
 
-    def send_prompt(self, prompt, use_powerful_model=False, use_light_model = False):
+    def get_models(self, use_powerful_model=False, use_light_model=False):
         if use_powerful_model:
-            return self._create_message_for_claude(content=prompt, model=self.POWERFUL_MODEL)
+            return self.POWERFUL_MODELS
         elif use_light_model:
-            return self._create_message_for_claude(content=prompt, model=self.LIGHT_MODEL)
-        for model in self.MODELS:
+            return self.LIGHT_MODELS
+        return self.MODELS
+
+    def send_prompt(self, prompt, use_powerful_model=False, use_light_model = False):
+        models = self.get_models(use_powerful_model=use_powerful_model, use_light_model=use_light_model)
+        for model in models:
             response = self._create_message_for_claude(content=prompt, model=model)
             if response:
-                return response
-        return response
+                return response.content[0].text
+            continue
+        return
