@@ -1,2 +1,1 @@
-# etai-backend
-A Flask app that integrates with multiple LLMs and external APIs
+This repository is empty. Any task executed on it should be considered a new capability and needs to be created.
