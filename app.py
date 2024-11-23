@@ -111,12 +111,13 @@ def query():
     summary_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/summarize.md").text
     summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(works_partial))
     summary_prompt = summary_prompt.replace("{{INPUT}}", question)
-    summary_response = send_prompt_to_clients(prompt=summary_prompt)
+    summary_response = send_prompt_to_clients(prompt=summary_prompt, use_powerful_model=True)
     try:
         summary = extract_tag_content(text=summary_response.content[0].text, tag_name=TAG_NAME)
         summary = json.loads(summary)
     except json.decoder.JSONDecodeError:
         summary = "Failed to get summary"
+        print(summary, summary_response)
 
     return jsonify(
         {
