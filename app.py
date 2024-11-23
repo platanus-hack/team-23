@@ -1,6 +1,6 @@
 import json
 from flask import Flask, request, jsonify
-from constants import OPEN_ALEX_API_URL
+from constants import OPEN_ALEX_API_URL, TAG_NAME, PER_PAGE_LIMIT
 from flask_cors import CORS
 from anthropic_client import create_message_for_claude
 from urllib.parse import urlencode
@@ -32,7 +32,7 @@ def get_works_by_keywords(keywords, per_page = 100):
     return response.json()
 
 
-def extract_xml_tag_content(text, tag_name):
+def extract_tag_content(text, tag_name):
     pattern = rf"<{tag_name}>(.*?)</{tag_name}>"
     match = re.search(pattern, text, re.DOTALL)
     if match:
@@ -60,13 +60,19 @@ def inverted_index_to_text(inverted_idx: dict):
     return ' '.join(reconstructed_string)
 
 
+def get_first_n_words(text: str, n: int = 300) -> str:
+    words = text.split()
+    first_200_words = words[:n]
+    return ' '.join(first_200_words)
+
+
 @app.route('/query', methods=['GET'])
 def query():
     works_partial = []
     question = request.args.get("question")
     per_page = int(request.args.get("per_page", 100))
-    if per_page > 100:
-        per_page = 100
+    if per_page > PER_PAGE_LIMIT:
+        per_page = PER_PAGE_LIMIT
 
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
@@ -143,8 +149,8 @@ def query():
     """
 
     terms = terms.replace("{{QUERY}}", question)
-    message = create_message_for_claude(content=terms)
-    ans = extract_xml_tag_content(text=message.content[0].text, tag_name="answer")
+    terms_ans = create_message_for_claude(content=terms)
+    ans = extract_tag_content(text=terms_ans.content[0].text, tag_name=TAG_NAME)
     terms = json.loads(ans)
     if not terms:
         return jsonify({"error": "failed to get terms"}), 500
@@ -155,8 +161,8 @@ def query():
         {
             "doi": work["doi"],
             "title": work["title"],
-            "abstract": inverted_index_to_text(
-                inverted_idx=work["abstract_inverted_index"]
+            "abstract": (
+                get_first_n_words(inverted_index_to_text(inverted_idx=work["abstract_inverted_index"]))
             ),
             "pub_year": work["publication_year"],
         }
@@ -165,6 +171,8 @@ def query():
 
     if not works_partial:
         return jsonify({"error": "failed to get works"}), 500
+
+    # SUMMARIZE PROMPT
 
     return jsonify(
         {
