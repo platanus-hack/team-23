@@ -1,0 +1,4 @@
+Flask==2.0.2
+openai==0.10.2
+anthropic==0.1.0
+requests==2.26.0
