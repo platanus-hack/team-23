@@ -135,5 +135,57 @@ def query():
     ), 200
 
 
+@app.route('/works', methods=['GET'])
+def works():
+    question = request.args.get("question")
+    per_page = int(request.args.get("per_page", 100))
+    if per_page > PER_PAGE_LIMIT:
+        per_page = PER_PAGE_LIMIT
+
+    if not question:
+        return jsonify({"error": "question parameter is required"}), 400
+
+    terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
+    terms = terms_prompt.replace("{{QUERY}}", question)
+    terms_ans = send_prompt_to_clients(prompt=terms)
+    ans = extract_tag_content(text=terms_ans.content[0].text, tag_name=TAG_NAME)
+    terms = json.loads(ans)
+    if not terms:
+        return jsonify({"error": "failed to get terms"}), 500
+    
+    works = get_works_by_keywords(keywords=terms["keywords"], per_page=per_page)
+
+    works_partial = [
+        {
+            "doi": work["doi"],
+            "title": work["title"],
+            "abstract": (
+                get_first_n_words(
+                    inverted_index_to_text(inverted_idx=work["abstract_inverted_index"])
+                )
+            ),
+            "pub_year": work["publication_year"],
+        }
+        for work in works["results"]
+    ]
+
+    if not works_partial:
+        return jsonify({"error": "failed to get works"}), 500
+    
+    return jsonify(
+        {
+            "keywords": terms["keywords"],
+            "works_partial": [
+                {
+                    "doi": work["doi"],
+                    "title": work["title"],
+                    "pub_year": work["pub_year"],
+                }
+                for work in works_partial
+            ],
+        }
+    ), 200
+
+
 if __name__ == '__main__':
     app.run(debug=True)
