@@ -70,7 +70,7 @@ def query():
     try:
         summary = extract_tag_content(text=summary_response.content[0].text, tag_name=TAG_NAME)
         summary = json.loads(summary)
-    except json.decoder.JSONDecodeError:
+    except (json.decoder.JSONDecodeError, TypeError):
         summary = "Failed to get summary"
         print(summary, summary_response)
 
@@ -127,19 +127,7 @@ def works():
     if not works_partial:
         return jsonify({"error": "failed to get works"}), 500
     
-    return jsonify(
-        {
-            "keywords": terms["keywords"],
-            "works_partial": [
-                {
-                    "doi": work["doi"],
-                    "title": work["title"],
-                    "pub_year": work["pub_year"],
-                }
-                for work in works_partial
-            ],
-        }
-    ), 200
+    return jsonify(works_partial), 200
 
 
 @app.route('/facts', methods=['GET'])
