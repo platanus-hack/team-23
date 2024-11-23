@@ -54,12 +54,17 @@ def query():
                 )
             ),
             "pub_year": work["publication_year"],
+            "authorships": work["authorships"],
+            "pub_date": work["publication_date"],
+            "cited_by_count": work["cited_by_count"],
         }
         for work in works["results"]
     ]
 
     if not works_partial:
         return jsonify({"error": "failed to get works"}), 500
+
+    total_count = works.get("meta", {}).get("count", 0)
 
     # PROMPT TO GENERATE SUMMARY
 
@@ -77,11 +82,15 @@ def query():
         {
             "summary": summary,
             "keywords": terms["keywords"],
+            "total_count": total_count,
             "works_partial": [
                 {
                     "doi": work["doi"],
                     "title": work["title"],
+                    "pub_date": work["pub_date"],
                     "pub_year": work["pub_year"],
+                    "authorships": work["authorships"],
+                    "cited_by_count": work["cited_by_count"],
                 }
                 for work in works_partial
             ],
