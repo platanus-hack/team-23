@@ -6,7 +6,7 @@ from anthropic import Anthropic, APIError, APITimeoutError, RateLimitError
 
 class AnthropicClient:
     MODELS = [
-        # "claude-3-5-sonnet-20241022",
+        "claude-3-5-sonnet-20241022",
         "claude-3-5-haiku-20241022"
     ]
 
@@ -18,6 +18,7 @@ class AnthropicClient:
         try:
             return self.client.messages.create(
                 max_tokens=1024,
+                temperature=0.5,
                 messages=[
                     {
                         "role": "user",
@@ -29,7 +30,9 @@ class AnthropicClient:
         except (RateLimitError, APITimeoutError, APIError):
             return None
 
-    def send_prompt(self, prompt):
+    def send_prompt(self, prompt, use_powerful_model=False):
+        if use_powerful_model:
+            return self._create_message_for_claude(content=prompt, model=self.MODELS[0])
         for model in self.MODELS:
             response = self._create_message_for_claude(content=prompt, model=model)
             if response:
