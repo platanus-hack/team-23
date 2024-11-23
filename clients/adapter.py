@@ -25,5 +25,6 @@ def send_prompt_to_clients(prompt: str):
         )
         response = adapter.send_prompt(prompt=prompt)
         if not response:
+            print(f"Attempt {attempt + 1} failed, retrying...")
             time.sleep((2 ** attempt))
         return response
