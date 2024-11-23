@@ -15,7 +15,7 @@ class SendPromptToClientAdapter:
             return response
 
 
-def send_prompt_to_clients(prompt: str, use_powerful_model):
+def send_prompt_to_clients(prompt: str, use_powerful_model = False):
     for attempt in range(3):
         clients = [
             AnthropicClient(),
