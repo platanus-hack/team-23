@@ -36,7 +36,7 @@ def query():
     terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
     terms = terms_prompt.replace("{{QUERY}}", question)
     terms_ans = send_prompt_to_clients(prompt=terms)
-    ans = extract_tag_content(text=terms_ans.content[0].text, tag_name=TAG_NAME)
+    ans = extract_tag_content(text=terms_ans, tag_name=TAG_NAME)
     terms = json.loads(ans)
     if not terms:
         return jsonify({"error": "failed to get terms"}), 500
@@ -68,8 +68,7 @@ def query():
     summary_prompt = summary_prompt.replace("{{INPUT}}", question)
     summary_response = send_prompt_to_clients(prompt=summary_prompt, use_powerful_model=True)
     try:
-        summary = extract_tag_content(text=summary_response.content[0].text, tag_name=TAG_NAME)
-        summary = json.loads(summary)
+        summary = json.loads(summary_response)
     except (json.decoder.JSONDecodeError, TypeError):
         summary = "Failed to get summary"
         print(summary, summary_response)
@@ -103,7 +102,7 @@ def works():
     terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
     terms = terms_prompt.replace("{{QUERY}}", question)
     terms_ans = send_prompt_to_clients(prompt=terms)
-    ans = extract_tag_content(text=terms_ans.content[0].text, tag_name=TAG_NAME)
+    ans = extract_tag_content(text=terms_ans, tag_name=TAG_NAME)
     terms = json.loads(ans)
     if not terms:
         return jsonify({"error": "failed to get terms"}), 500
@@ -140,7 +139,7 @@ def facts():
     facts_prompt = facts_prompt.replace("{{QUERY}}", question)
     facts_response = send_prompt_to_clients(prompt=facts_prompt, use_light_model=True)
     try:
-        facts_ = json.loads(extract_tag_content(text=facts_response.content[0].text, tag_name=TAG_NAME))
+        facts_ = json.loads(extract_tag_content(text=facts_response, tag_name=TAG_NAME))
     except json.decoder.JSONDecodeError:
         facts_ = "Failed to get facts"
         print(facts_, facts_response)
