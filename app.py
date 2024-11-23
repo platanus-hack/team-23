@@ -2,11 +2,12 @@ import json
 from flask import Flask, request, jsonify
 from constants import OPEN_ALEX_API_URL, TAG_NAME, PER_PAGE_LIMIT
 from flask_cors import CORS
-from anthropic_client import create_message_for_claude
 from urllib.parse import urlencode
 import requests
 from dotenv import load_dotenv
 import re
+from clients.adapter import send_prompt_to_clients
+
 
 load_dotenv()
 
@@ -79,10 +80,8 @@ def query():
 
     # PROMPT TO GET TERMS FROM A QUESTION
     terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
-    
-
     terms = terms_prompt.replace("{{QUERY}}", question)
-    terms_ans = create_message_for_claude(content=terms)
+    terms_ans = send_prompt_to_clients(prompt=terms)
     ans = extract_tag_content(text=terms_ans.content[0].text, tag_name=TAG_NAME)
     terms = json.loads(ans)
     if not terms:
@@ -105,10 +104,24 @@ def query():
     if not works_partial:
         return jsonify({"error": "failed to get works"}), 500
 
-    # # SUMMARIZE PROMPT
+    # PROMPT TO GENERATE SUMMARY
+
+    summary_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/summarize.md").text
+    summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(works_partial))
+    summary_prompt = summary_prompt.replace("{{INPUT}}", question)
+    summary_response = send_prompt_to_clients(prompt=summary_prompt)
+    summary = extract_tag_content(text=summary_response.content[0].text, tag_name=TAG_NAME)
     return jsonify(
         {
-            "works": works_partial,
+            "summary": json.loads(summary),
+            "works_partial": [
+                {
+                    "doi": work["doi"],
+                    "title": work["title"],
+                    "pub_year": work["pub_year"],
+                }
+                for work in works_partial
+            ],
         }
     ), 200
 
