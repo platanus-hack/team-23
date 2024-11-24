@@ -1,14 +1,25 @@
 interface ButtonProps {
   label: string;
+  variant?: "primary" | "secondary";
   onClick?: () => void;
   icon?: string;
 }
 
-export default function Button({ onClick, label, icon }: ButtonProps) {
+const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
+  primary: "bg-orange-600 text-white",
+  secondary: "bg-gray-200 text-gray-800",
+};
+
+export default function Button({
+  onClick,
+  label,
+  icon,
+  variant = "primary",
+}: ButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-center bg-orange-600 rounded-full text-white gap-2"
+      className={`w-full flex items-center justify-center rounded-full gap-2 ${variantClasses[variant]}`}
     >
       <div>{label}</div>
       {icon && <span className="material-symbols-sharp">open_in_new</span>}
