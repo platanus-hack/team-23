@@ -1,6 +1,6 @@
 import requests
 from urllib.parse import urlencode
-from constants import OPEN_ALEX_API_URL, PER_PAGE_LIMIT
+from constants import OPEN_ALEX_API_URL, PER_PAGE_LIMIT, OPEN_ALEX_DEFAULT_SELECT, OPEN_ALEX_DEFAULT_FILTER
 
 
 class OpenAlexClient:
@@ -19,12 +19,12 @@ class OpenAlexClient:
 
 
 def get_works_by_keywords(keywords: list[str], select: str | None = None, per_page = PER_PAGE_LIMIT):
-    select = select or 'id,doi,title,authorships,abstract_inverted_index,publication_year,publication_date,cited_by_count'
+    select = select or OPEN_ALEX_DEFAULT_SELECT
     query = ' OR '.join(keywords)
     params = {
         'search': query,
         'per_page': per_page,
-        'filter': 'has_abstract:true',
+        'filter': OPEN_ALEX_DEFAULT_FILTER,
         'select': select,
     }
     client = OpenAlexClient(per_page=per_page)
