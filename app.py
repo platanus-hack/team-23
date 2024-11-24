@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify
 from constants import TAG_NAME, PER_PAGE_LIMIT
 from flask_cors import CORS
 from dotenv import load_dotenv
-from utils import extract_tag_content, get_first_n_words, inverted_index_to_text
+from utils import extract_tag_content, inverted_index_to_text_v2
 from clients.adapter import send_prompt_to_clients
 from open_alex_client import get_works_by_keywords
 
@@ -34,7 +34,7 @@ def query():
     # PROMPT TO GET TERMS FROM A QUESTION
     terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
     terms = terms_prompt.replace("{{QUERY}}", question)
-    terms_ans = send_prompt_to_clients(prompt=terms)
+    terms_ans = send_prompt_to_clients(prompt=terms, use_light_model=True)
     ans = extract_tag_content(text=terms_ans, tag_name=TAG_NAME)
     terms = json.loads(ans)
     if not terms:
@@ -44,30 +44,31 @@ def query():
         keywords=terms["keywords"], per_page=per_page,
     )
     prompt_works, query_works = [], []
-    for works in works["results"]:
-        prompt_works.append(
-            {
-                "doi": works["doi"],
-                "title": works["title"],
-                "abstract": (
-                    get_first_n_words(
-                        inverted_index_to_text(inverted_idx=works["abstract_inverted_index"])
-                    )
-                ),
-                "pub_date": works["publication_date"],
-                "cited_by_count": works["cited_by_count"],
-            }
-        )
-        query_works.append(
-            {
-                "doi": works["doi"],
-                "title": works["title"],
-                "pub_date": works["publication_date"],
-                "pub_year": works["publication_year"],
-                "authorships": works["authorships"],
-                "cited_by_count": works["cited_by_count"],
-            }
-        )
+
+    prompt_works = [
+        {
+            "doi": works["doi"],
+            "title": works["title"],
+            "abstract": (
+                inverted_index_to_text_v2(inverted_idx=works["abstract_inverted_index"])
+            ),
+            "pub_date": works["publication_date"],
+            "cited_by_count": works["cited_by_count"],
+        }
+        for works in works["results"]
+        if works.get("doi") is not None
+    ]
+    query_works = [
+        {
+            "doi": works["doi"],
+            "title": works["title"],
+            "pub_date": works["publication_date"],
+            "pub_year": works["publication_year"],
+            "authorships": works["authorships"],
+            "cited_by_count": works["cited_by_count"],
+        }
+        for works in works["results"]
+    ]
 
     if not prompt_works:
         return jsonify({"error": "failed to get works"}), 500
@@ -79,6 +80,7 @@ def query():
     summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(prompt_works))
     summary_prompt = summary_prompt.replace("{{INPUT}}", question)
     summary_response = send_prompt_to_clients(prompt=summary_prompt, use_powerful_model=True)
+
     try:
         summary = json.loads(summary_response)
     except (json.decoder.JSONDecodeError, TypeError):
@@ -107,7 +109,7 @@ def works():
 
     terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
     terms = terms_prompt.replace("{{QUERY}}", question)
-    terms_ans = send_prompt_to_clients(prompt=terms)
+    terms_ans = send_prompt_to_clients(prompt=terms, use_light_model=True)
     ans = extract_tag_content(text=terms_ans, tag_name=TAG_NAME)
     terms = json.loads(ans)
     if not terms:
@@ -120,9 +122,7 @@ def works():
             "doi": work["doi"],
             "title": work["title"],
             "abstract": (
-                get_first_n_words(
-                    inverted_index_to_text(inverted_idx=work["abstract_inverted_index"])
-                )
+                inverted_index_to_text_v2(inverted_idx=work["abstract_inverted_index"])
             ),
             "pub_date": work["publication_date"],
             "cited_by_count": work["cited_by_count"],
