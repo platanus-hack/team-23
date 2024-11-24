@@ -1,21 +1,6 @@
 import re
 
 
-def inverted_index_to_text(inverted_idx: dict):
-    position_term_pairs = []
-    for term, positions in inverted_idx.items():
-        for position in positions:
-            position_term_pairs.append((position, term))
-
-    position_term_pairs.sort()
-    reconstructed_string = []
-
-    for _, term in position_term_pairs:
-        reconstructed_string.append(term)
-
-    return " ".join(reconstructed_string)
-
-
 def inverted_index_to_text_v2(inverted_idx: dict, max_words: int = 200):
     position_term_pairs = []
     for term, positions in inverted_idx.items():

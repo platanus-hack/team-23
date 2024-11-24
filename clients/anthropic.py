@@ -1,9 +1,10 @@
 import os
+from clients.base import BaseClient
 from anthropic import Anthropic
 from anthropic import Anthropic, APIError, APITimeoutError, RateLimitError
 
 
-class AnthropicClient:
+class AnthropicClient(BaseClient):
     MODELS = ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"]
     POWERFUL_MODELS = ["claude-3-5-sonnet-20241022"]
     LIGHT_MODELS = ["claude-3-5-haiku-20241022"]
