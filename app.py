@@ -159,11 +159,15 @@ def facts():
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
 
-    facts_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_introductory_facts.md").text
-    facts_prompt = facts_prompt.replace("{{QUERY}}", question)
+    with open(constants.FACTS_PROMPT_PATH, 'r', encoding='utf-8') as file:
+        facts_prompt = file.read().strip()
+        facts_prompt = facts_prompt.replace("{{QUERY}}", question)
+
     facts_response = send_prompt_to_clients(prompt=facts_prompt, use_light_model=True)
     try:
-        facts_ = json.loads(extract_tag_content(text=facts_response, tag_name=constants.TAG_NAME))
+        facts_ = json.loads(
+            extract_tag_content(text=facts_response, tag_name=constants.TAG_NAME)
+        )
     except json.decoder.JSONDecodeError:
         facts_ = "Failed to get facts"
         print(facts_, facts_response)
