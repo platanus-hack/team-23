@@ -39,7 +39,7 @@ export default function Results() {
         <Loader />
       ) : (
         summary && (
-          <div className="py-4 flex flex-col gap-12">
+          <div className="pt-4 flex flex-col gap-12 pb-16">
             <MainSummary />
             <KeyFindings />
             <Bibliography />

@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useAppContext } from "../contexts/AppContext";
 import preventWidows from "../scripts/preventWidows";
+import Suggestions from "./Suggestions";
 
 export default function Search() {
   const { setQuery } = useAppContext();
@@ -8,11 +9,11 @@ export default function Search() {
 
   return (
     <div className="min-h-dvh flex flex-col justify-center">
-      <div className="text-orange-600 text-[32px] leading-tight mb-6 sm:text-center sm:mb-8">
+      <div className="text-orange-600 text-[32px] leading-tight mb-6 sm:text-center sm:mb-10">
         {preventWidows("¿Qué quieres aprender hoy?") + " 🤓"}
       </div>
       <form
-        className="w-full mx-auto max-w-xl"
+        className="w-full mx-auto max-w-xl mb-6 sm:mb-10"
         onSubmit={(e) => {
           e.preventDefault();
           setQuery(inputRef.current?.value || "");
@@ -26,6 +27,7 @@ export default function Search() {
           autoFocus
         />
       </form>
+      <Suggestions />
     </div>
   );
 }
