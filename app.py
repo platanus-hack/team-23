@@ -10,7 +10,6 @@ from clients.adapter import send_prompt_to_clients
 from open_alex_client import get_works_by_keywords
 from flask import Flask
 from flask_caching import Cache
-import redis
 
 
 load_dotenv()
@@ -19,29 +18,16 @@ load_dotenv()
 config = {
     "DEBUG": True,
     "CACHE_TYPE": "redis",
-    "CACHE_REDIS_URL": os.getenv('REDIS_URL'),
-    "CACHE_DEFAULT_TIMEOUT": 300
+    "CACHE_REDIS_URL": os.getenv('REDIS_TEMPORARY_URL'),
+    "CACHE_DEFAULT_TIMEOUT": 300,
+    "CACHE_OPTIONS": {
+        "ssl_cert_reqs": None
+    }
 }
-
 
 app = Flask(__name__)
 app.config.from_mapping(config)
-cache = Cache(
-    app, 
-    config={
-        **config,
-        "CACHE_REDIS_HOST": os.getenv("REDIS_URL"),
-        "CACHE_OPTIONS": {
-            "connection_pool": redis.ConnectionPool.from_url(
-                os.getenv("REDIS_URL"),
-                decode_responses=True,
-                ssl_cert_reqs=None  # Disables SSL verification
-            )
-        }
-    }
-)
-
-
+cache = Cache(app)
 cors = CORS(app)
 
 
