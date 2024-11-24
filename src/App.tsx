@@ -132,7 +132,7 @@ function App() {
 
   return (
     <div id="results">
-      {!data && (
+      {!(data || isLoading) && (
         <div>
           <form onSubmit={handleSubmit}>
             <input
