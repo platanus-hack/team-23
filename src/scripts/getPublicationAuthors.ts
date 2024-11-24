@@ -1,4 +1,4 @@
-import { Publication } from "../App";
+import { Publication } from "../interfaces";
 
 export default function getPublicationAuthors(publication: Publication) {
   if (publication.authorships.length === 0) return "Anónimo";
