@@ -56,9 +56,10 @@ function App() {
     if (inputRef.current) {
       refetchFacts();
       setTimeout(() => {
-        refetch();
-        getWorksStats(data?.keywords?.join(" OR ")).then((result) => {
-          setWorkStats(result);
+        refetch().then(() => {
+          getWorksStats(data?.keywords?.join(" OR ")).then((result) => {
+            setWorkStats(result);
+          });
         });
       }, 500);
     }
