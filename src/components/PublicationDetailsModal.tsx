@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Publication } from "../App";
 import Button from "./Button";
 import getPublicationAuthors from "../scripts/getPublicationAuthors";
+import { Publication } from "../interfaces";
 
 interface PublicationDetailsModalProps {
   publication: Publication;

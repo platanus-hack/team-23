@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { ExtraProps } from "react-markdown";
-import { Publication } from "../App";
+import { Publication } from "../interfaces";
 
 const CitationLink: React.FC<
   React.ClassAttributes<HTMLAnchorElement> &
