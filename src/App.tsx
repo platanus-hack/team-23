@@ -170,7 +170,7 @@ function App() {
           </div>
 
           <div>
-            <h3>Descubrimientos más recientes</h3>
+            <h3>Hallazgos clave</h3>
             {summary.key_findings.map((finding: Finding) => (
               <div
                 key={finding.title}
