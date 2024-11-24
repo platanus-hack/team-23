@@ -10,6 +10,12 @@ Additionally, you have at your disposal the user-submitted query that originated
 {{QUERY}}
 </user_query>
 
+you also have the language of the user-browser, consider it to translate the results, 
+
+<user_language>
+{{LANGUAGE}}
+</user_language>
+
 You must output a JSON document consisting of the following fields: `title`, `clean_query`, `introduction_summary`, `key_findings`, `related_queries`, `query_answer`.
 
 Here is how to resolve each field:
@@ -50,4 +56,5 @@ An array containing a mixture of search terms and questions that the user can ch
 
 - When deciding how many paragraphs to return in the `introduction_summary` and `query_answer` fields, make sure to avoid outputting repetitive or vague information.
 - Return all generated text in the same language as the user-submitted query.
+- Prioritize the user-submitted query language just if you are sure of the language, in any other case you should use browser-language
 - Return only the JSON result in the specified response, minified, and nothing else.
