@@ -130,6 +130,7 @@ function App() {
   const summary = data?.summary;
   const bibliography = data?.works_partial;
   const showInput = !(data || isLoading);
+  const showButton = !showInput && !isLoading;
   return (
     <div id="results">
       {showInput && (
@@ -144,6 +145,9 @@ function App() {
             <button type="submit">Buscar</button>
           </form>
         </div>
+      )}
+      {showButton && (
+        <button onClick={() => window.location.reload()}>Nueva búsqueda</button>
       )}
       {isLoading && (
         <div>
