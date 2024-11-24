@@ -29,7 +29,7 @@ def hello_world():
 
 
 @app.route('/query', methods=['GET'])
-@cache.cached(timeout=50)
+@cache.cached(query_string=True)
 def query():
     question = request.args.get("question")
     per_page = int(request.args.get("per_page", PER_PAGE_LIMIT))
@@ -144,7 +144,7 @@ def works():
 
 
 @app.route('/facts', methods=['GET'])
-@cache.cached(timeout=50)
+@cache.cached(query_string=True)
 def facts():
     """
     factos
