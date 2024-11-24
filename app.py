@@ -23,7 +23,6 @@ def hello_world():
 
 @app.route('/query', methods=['GET'])
 def query():
-    works_partial = []
     question = request.args.get("question")
     per_page = int(request.args.get("per_page", PER_PAGE_LIMIT))
     if per_page > PER_PAGE_LIMIT:
@@ -44,29 +43,40 @@ def query():
     works = get_works_by_keywords(
         keywords=terms["keywords"], per_page=per_page,
     )
-    works_partial = [
-        {
-            "doi": work["doi"],
-            "title": work["title"],
-            "abstract": (
-                get_first_n_words(
-                    inverted_index_to_text(inverted_idx=work["abstract_inverted_index"])
-                )
-            ),
-            "pub_date": work["publication_date"],
-            "cited_by_count": work["cited_by_count"],
-        }
-        for work in works["results"]
-    ]
+    prompt_works, query_works = [], []
+    for works in works["results"]:
+        prompt_works.append(
+            {
+                "doi": works["doi"],
+                "title": works["title"],
+                "abstract": (
+                    get_first_n_words(
+                        inverted_index_to_text(inverted_idx=works["abstract_inverted_index"])
+                    )
+                ),
+                "pub_date": works["publication_date"],
+                "cited_by_count": works["cited_by_count"],
+            }
+        )
+        query_works.append(
+            {
+                "doi": works["doi"],
+                "title": works["title"],
+                "pub_date": works["publication_date"],
+                "pub_year": works["publication_year"],
+                "authorships": works["authorships"],
+                "cited_by_count": works["cited_by_count"],
+            }
+        )
 
-    if not works_partial:
+    if not prompt_works:
         return jsonify({"error": "failed to get works"}), 500
 
     total_count = works.get("meta", {}).get("count", 0)
 
     # PROMPT TO GENERATE SUMMARY
     summary_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/summarize.md").text
-    summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(works_partial))
+    summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(prompt_works))
     summary_prompt = summary_prompt.replace("{{INPUT}}", question)
     summary_response = send_prompt_to_clients(prompt=summary_prompt, use_powerful_model=True)
     try:
@@ -80,16 +90,7 @@ def query():
             "summary": summary,
             "keywords": terms["keywords"],
             "total_count": total_count,
-            "works_partial": [
-                {
-                    "doi": work["doi"],
-                    "title": work["title"],
-                    "pub_date": work["publication_date"],
-                    "pub_year": work["publication_year"],
-                    "authorships": work["authorships"],
-                    "cited_by_count": work["cited_by_count"],
-                } for work in works["results"]
-            ]
+            "works_partial": query_works
         }
     ), 200
 
