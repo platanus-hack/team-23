@@ -104,7 +104,7 @@ function App() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputRef.current) {
+    if (inputRef.current && inputRef.current.value.trim().length > 0) {
       refetchFacts();
       setTimeout(() => {
         refetch().then(() => {
