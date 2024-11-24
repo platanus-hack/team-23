@@ -1,7 +1,7 @@
 import json
 import requests
 from flask import Flask, request, jsonify
-from constants import TAG_NAME, PER_PAGE_LIMIT
+from . import constants
 from flask_cors import CORS
 from dotenv import load_dotenv
 from utils import extract_tag_content, inverted_index_to_text_v2
@@ -10,11 +10,13 @@ from open_alex_client import get_works_by_keywords
 from flask import Flask
 from flask_caching import Cache
 
+
 load_dotenv()
 
+
 config = {
-    "DEBUG": True,          # some Flask specific configs
-    "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
+    "DEBUG": True,
+    "CACHE_TYPE": "SimpleCache",
     "CACHE_DEFAULT_TIMEOUT": 300
 }
 app = Flask(__name__)
@@ -32,18 +34,20 @@ def hello_world():
 @cache.cached(query_string=True)
 def query():
     question = request.args.get("question")
-    per_page = int(request.args.get("per_page", PER_PAGE_LIMIT))
-    if per_page > PER_PAGE_LIMIT:
-        per_page = PER_PAGE_LIMIT
+    per_page = int(request.args.get("per_page", constants.PER_PAGE_LIMIT))
+    if per_page > constants.PER_PAGE_LIMIT:
+        per_page = constants.PER_PAGE_LIMIT
 
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
 
     # PROMPT TO GET TERMS FROM A QUESTION
-    terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
-    terms = terms_prompt.replace("{{QUERY}}", question)
-    terms_ans = send_prompt_to_clients(prompt=terms, use_light_model=True)
-    ans = extract_tag_content(text=terms_ans, tag_name=TAG_NAME)
+    with open(constants.KEYWORDS_PROMPT_PATH, 'r', encoding='utf-8') as file:
+        prompt = file.read().strip()
+        prompt = prompt.replace("{{QUERY}}", question)
+
+    terms_ans = send_prompt_to_clients(prompt=prompt, use_light_model=True)
+    ans = extract_tag_content(text=terms_ans, tag_name=constants.TAG_NAME)
     terms = json.loads(ans)
     if not terms:
         return jsonify({"error": "failed to get terms"}), 500
@@ -83,9 +87,11 @@ def query():
     total_count = works.get("meta", {}).get("count", 0)
 
     # PROMPT TO GENERATE SUMMARY
-    summary_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/summarize.md").text
-    summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(prompt_works))
-    summary_prompt = summary_prompt.replace("{{INPUT}}", question)
+    with open(constants.SUMMARY_PROMPT_PATH, 'r', encoding='utf-8') as file:
+        summary_prompt = file.read().strip()
+        summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(prompt_works))
+        summary_prompt = summary_prompt.replace("{{INPUT}}", question)
+
     summary_response = send_prompt_to_clients(prompt=summary_prompt, use_powerful_model=True)
 
     try:
@@ -108,8 +114,8 @@ def query():
 def works():
     question = request.args.get("question")
     per_page = int(request.args.get("per_page", 100))
-    if per_page > PER_PAGE_LIMIT:
-        per_page = PER_PAGE_LIMIT
+    if per_page > constants.PER_PAGE_LIMIT:
+        per_page = constants.PER_PAGE_LIMIT
 
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
@@ -117,7 +123,7 @@ def works():
     terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
     terms = terms_prompt.replace("{{QUERY}}", question)
     terms_ans = send_prompt_to_clients(prompt=terms, use_light_model=True)
-    ans = extract_tag_content(text=terms_ans, tag_name=TAG_NAME)
+    ans = extract_tag_content(text=terms_ans, tag_name=constants.TAG_NAME)
     terms = json.loads(ans)
     if not terms:
         return jsonify({"error": "failed to get terms"}), 500
@@ -157,7 +163,7 @@ def facts():
     facts_prompt = facts_prompt.replace("{{QUERY}}", question)
     facts_response = send_prompt_to_clients(prompt=facts_prompt, use_light_model=True)
     try:
-        facts_ = json.loads(extract_tag_content(text=facts_response, tag_name=TAG_NAME))
+        facts_ = json.loads(extract_tag_content(text=facts_response, tag_name=constants.TAG_NAME))
     except json.decoder.JSONDecodeError:
         facts_ = "Failed to get facts"
         print(facts_, facts_response)
