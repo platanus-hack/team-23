@@ -9,6 +9,7 @@ import { useQuery } from "react-query";
 import { Finding, Publication, SummaryResponse } from "../interfaces";
 import getWorksStats, { AnalysisResult } from "../scripts/processArticles";
 import getLinksFromMarkdown from "../scripts/getLinksFromMarkdown";
+import CitationLink from "../components/CitationLink";
 
 export interface AppContextValue {
   query: string;
@@ -26,6 +27,7 @@ export interface AppContextValue {
   toggleFinding: (index: Finding["title"]) => void;
   visibleFindings: Finding["title"][];
   filteredBibliography: Publication[];
+  mappedAnchorComponent: (props: JSX.IntrinsicElements["a"]) => JSX.Element;
 }
 
 export const AppContext = createContext<AppContextValue | null>(null);
@@ -123,6 +125,20 @@ export const useAppContextValue = (): AppContextValue => {
     [bibliography, extractedLinks]
   );
 
+  const mappedAnchorComponent = useCallback(
+    (props: JSX.IntrinsicElements["a"]) => (
+      <CitationLink
+        {...props}
+        bibliography={filteredBibliography}
+        onCitationClick={(id) => {
+          const publication = bibliography?.find((pub) => pub.id === id);
+          if (publication) setOpenPublication(publication);
+        }}
+      />
+    ),
+    [bibliography, filteredBibliography]
+  );
+
   return {
     query,
     setQuery,
@@ -139,6 +155,7 @@ export const useAppContextValue = (): AppContextValue => {
     toggleFinding,
     visibleFindings,
     filteredBibliography,
+    mappedAnchorComponent,
   };
 };
 
