@@ -6,6 +6,7 @@ import getWorksStats from "./scripts/processArticles";
 import type { AnalysisResult } from "./scripts/processArticles";
 import CitationLink from "./components/CitationLink";
 import PublicationDetailsModal from "./components/PublicationDetailsModal";
+import AppearingTextRandomizer from "./components/AppearingTextRandomizer";
 
 interface Institution {
   institution_ids: string[];
@@ -42,22 +43,6 @@ interface Finding {
   summary: string;
   title: string;
 }
-
-/*
-interface Summary {
-  clean_query: string;
-  introduction_summary: string; 
-  key_findings: KeyFinding[]; 
-  query_answer: string;
-  related_queries: string[]; 
-};
-
-interface Results {
-  keywords: string[]; 
-  summary: Summary;   
-  total_count: number; 
-  works_partial: Publication[]; 
-}; */
 
 const fetchSearchResults = async (query: string) => {
   console.log("search");
@@ -170,13 +155,17 @@ function App() {
       )}
       {isLoading && (
         <div>
-          {facts
-            ? facts.map((fact: string, index: number) => (
-                <div key={index}>
-                  <h4>{fact}</h4>
-                </div>
-              ))
-            : "Loading..."}
+          {facts ? (
+            <div>
+              <AppearingTextRandomizer
+                facts={facts}
+                rotateInterval={1800}
+                timeBetweenChars={60}
+              />
+            </div>
+          ) : (
+            "Loading..."
+          )}
         </div>
       )}
       {summary && (
