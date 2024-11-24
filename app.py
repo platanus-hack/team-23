@@ -126,8 +126,10 @@ def works():
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
 
-    terms_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/generate_keywords.md").text
-    terms = terms_prompt.replace("{{QUERY}}", question)
+    with open(constants.KEYWORDS_PROMPT_PATH, 'r', encoding='utf-8') as file:
+        terms_prompt = file.read().strip()
+        terms = terms_prompt.replace("{{QUERY}}", question)
+
     terms_ans = send_prompt_to_clients(prompt=terms, use_light_model=True)
     ans = extract_tag_content(text=terms_ans, tag_name=constants.TAG_NAME)
     terms = json.loads(ans)
