@@ -1,3 +1,4 @@
+import os
 import json
 import requests
 from flask import Flask, request, jsonify
@@ -16,9 +17,12 @@ load_dotenv()
 
 config = {
     "DEBUG": True,
-    "CACHE_TYPE": "SimpleCache",
+    "CACHE_TYPE": "redis",
+    "CACHE_REDIS_URL": os.getenv('REDIS_URL'),
     "CACHE_DEFAULT_TIMEOUT": 300
 }
+
+
 app = Flask(__name__)
 app.config.from_mapping(config)
 cache = Cache(app)
