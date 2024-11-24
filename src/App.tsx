@@ -1,9 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { useQuery } from "react-query";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
 import getWorksStats from "./scripts/processArticles";
 import type { AnalysisResult } from "./scripts/processArticles";
+import CitationLink from "./components/CitationLink";
+import PublicationDetailsModal from "./components/PublicationDetailsModal";
 
 interface Institution {
   institution_ids: string[];
@@ -16,7 +18,7 @@ interface Author {
   orcid?: string;
 }
 
-interface Authorship {
+export interface Authorship {
   affiliations: Institution[];
   author: Author;
   author_position: string;
@@ -27,7 +29,7 @@ interface Authorship {
   raw_author_name: string;
 }
 
-interface Publication {
+export interface Publication {
   authorships: Authorship[];
   cited_by_count: number;
   doi: string;
@@ -83,6 +85,9 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [workStats, setWorkStats] = useState<null | AnalysisResult>(null);
   const [openDropdowns, setOpenDropdowns] = useState<Finding["title"][]>([]);
+  const [openPublication, setOpenPublication] = useState<Publication | null>(
+    null
+  );
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -128,9 +133,23 @@ function App() {
 
   const facts = factsData?.facts;
   const summary = data?.summary;
-  const bibliography = data?.works_partial;
   const showInput = !(data || isLoading);
   const showButton = !showInput && !isLoading;
+  const bibliography: Publication[] | undefined = data?.works_partial;
+
+  const mappedAnchorComponent = useCallback(
+    (props: JSX.IntrinsicElements["a"]) => (
+      <CitationLink
+        {...props}
+        onCitationClick={(doi) => {
+          const publication = bibliography?.find((pub) => pub.doi === doi);
+          if (publication) setOpenPublication(publication);
+        }}
+      />
+    ),
+    [bibliography]
+  );
+
   return (
     <div id="results">
       {showInput && (
@@ -166,7 +185,11 @@ function App() {
             <h1>
               {summary.query_answer ? summary.clean_query : summary.title}
             </h1>
-            <ReactMarkdown>
+            <ReactMarkdown
+              components={{
+                a: mappedAnchorComponent,
+              }}
+            >
               {summary.query_answer
                 ? summary.query_answer
                 : summary.introduction_summary}
@@ -183,7 +206,13 @@ function App() {
                 <h4>{finding.title}</h4>
                 {openDropdowns.includes(finding.title) && (
                   <p>
-                    <ReactMarkdown>{finding.summary}</ReactMarkdown>
+                    <ReactMarkdown
+                      components={{
+                        a: mappedAnchorComponent,
+                      }}
+                    >
+                      {finding.summary}
+                    </ReactMarkdown>
                   </p>
                 )}
               </div>
@@ -287,6 +316,12 @@ function App() {
             })}
           </ul>
         </div>
+      )}
+      {openPublication && (
+        <PublicationDetailsModal
+          publication={openPublication}
+          onClose={() => setOpenPublication(null)}
+        />
       )}
     </div>
   );
