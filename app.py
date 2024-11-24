@@ -1,7 +1,7 @@
 import json
 import requests
 from flask import Flask, request, jsonify
-from . import constants
+import constants
 from flask_cors import CORS
 from dotenv import load_dotenv
 from utils import extract_tag_content, inverted_index_to_text_v2
