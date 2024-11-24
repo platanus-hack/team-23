@@ -86,8 +86,10 @@ def query():
                 inverted_index_to_text_v2(inverted_idx=works["abstract_inverted_index"])
             ),
             "location_display_name": (
-                works["primary_location"].get("source").get("display_name", {})
-                if works["primary_location"].get("source") is not None else None
+                works["primary_location"].get("source", {}).get("display_name", {})
+                if works["primary_location"] is not None
+                and works["primary_location"].get("source") is not None
+                else None
             ),
             "location_url": (
                 works["primary_location"].get("landing_page_url", {})
