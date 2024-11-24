@@ -7,5 +7,9 @@
 }
 
 .header {
-  @apply h-20 flex items-center justify-between sm:justify-center;
+  @apply h-20 flex items-center justify-between;
+}
+
+.sm-centered {
+  @apply sm:justify-center;
 }

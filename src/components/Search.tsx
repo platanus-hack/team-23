@@ -8,7 +8,7 @@ export default function Search() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="min-h-dvh flex flex-col justify-center">
+    <div className="flex-1 flex flex-col justify-center -mt-16">
       <div className="text-orange-600 text-[32px] leading-tight mb-6 sm:text-center sm:mb-10">
         {preventWidows("¿Qué quieres aprender hoy?") + " 🤓"}
       </div>

@@ -8,7 +8,7 @@ export default function Suggestions() {
   const [terms] = useState(shuffleArray(suggestions.terms).slice(0, 5));
 
   return (
-    <div className="flex flex-wrap gap-x-3 gap-y-2 sm:justify-center">
+    <div className="absolute bottom-10 flex flex-wrap gap-x-3 gap-y-2 sm:justify-center">
       {terms.map((term) => (
         <a
           key={term}
