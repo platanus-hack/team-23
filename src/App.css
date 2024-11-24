@@ -1,8 +1,13 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  @apply w-dvw min-h-dvh;
+}
+
+.container {
+  @apply w-full max-w-2xl mx-auto px-6;
+}
+
+.header {
+  @apply h-20 flex items-center justify-between sm:justify-center;
 }
 
 .logo {
