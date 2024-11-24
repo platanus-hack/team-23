@@ -29,7 +29,7 @@ const AppearingTextRandomizer: React.FC<AppearingTextRotatorProps> = ({
       const nextIndex = (activeFactIndex + 1) % shuffledFacts.length;
       setTimeout(() => {
         setActiveFactIndex(nextIndex);
-        setDisplayedText("");
+        setDisplayedText(shuffledFacts[nextIndex][0]);
       }, rotateInterval);
     } else {
       setTimeout(() => {
