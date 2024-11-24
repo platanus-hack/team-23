@@ -7,12 +7,19 @@ from dotenv import load_dotenv
 from utils import extract_tag_content, inverted_index_to_text_v2
 from clients.adapter import send_prompt_to_clients
 from open_alex_client import get_works_by_keywords
-
+from flask import Flask
+from flask_caching import Cache
 
 load_dotenv()
 
-
+config = {
+    "DEBUG": True,          # some Flask specific configs
+    "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": 300
+}
 app = Flask(__name__)
+app.config.from_mapping(config)
+cache = Cache(app)
 cors = CORS(app)
 
 
@@ -22,6 +29,7 @@ def hello_world():
 
 
 @app.route('/query', methods=['GET'])
+@cache.cached(timeout=50)
 def query():
     question = request.args.get("question")
     per_page = int(request.args.get("per_page", PER_PAGE_LIMIT))
@@ -43,7 +51,6 @@ def query():
     works = get_works_by_keywords(
         keywords=terms["keywords"], per_page=per_page,
     )
-    prompt_works, query_works = [], []
 
     prompt_works = [
         {
