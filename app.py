@@ -144,6 +144,7 @@ def works():
 
 
 @app.route('/facts', methods=['GET'])
+@cache.cached(timeout=50)
 def facts():
     """
     factos
