@@ -253,25 +253,30 @@ function App() {
       )}
       {bibliography && (
         <div>
-          <h2>Referencias</h2>
+          <h2>Bibliografía</h2>
           <ul>
-            {bibliography.slice(0, 10).map((publication: Publication) => (
-              <li key={publication.doi}>
-                <a href={""}>{publication.title}</a>
-                <p>
-                  {[
-                    publication.authorships.find(
-                      (authorship: Authorship) =>
-                        authorship.author_position === "first"
-                    )!.raw_author_name +
-                      (publication.authorships.length > 1 && "  et al."),
-                    publication.pub_year && publication.pub_year,
-                    publication.cited_by_count &&
-                      `Citado por ${publication.cited_by_count}`,
-                  ].join(" · ")}
-                </p>
-              </li>
-            ))}
+            {bibliography.slice(0, 10).map((publication: Publication) => {
+              const author =
+                publication.authorships.find(
+                  (authorship: Authorship) =>
+                    authorship.author_position === "first"
+                ) || publication.authorships[0];
+              if (!author) return null;
+              return (
+                <li key={publication.doi}>
+                  <a href={""}>{publication.title}</a>
+                  <p>
+                    {[
+                      author.raw_author_name +
+                        (publication.authorships.length > 1 && "  et al."),
+                      publication.pub_year && publication.pub_year,
+                      publication.cited_by_count &&
+                        `Citado por ${publication.cited_by_count}`,
+                    ].join(" · ")}
+                  </p>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
