@@ -4,6 +4,7 @@ import AppearingTextRandomizer from "./AppearingTextRandomizer";
 import MainSummary from "./MainSummary";
 import KeyFindings from "./KeyFindings";
 import PublicationDetailsModal from "./PublicationDetailsModal";
+import Bibliography from "./Bibliography";
 
 const Loader: React.FC = () => {
   const { facts, loadingFacts } = useAppContext();
@@ -41,6 +42,7 @@ export default function Results() {
           <div className="py-4">
             <MainSummary />
             <KeyFindings />
+            <Bibliography />
           </div>
         )
       )}
