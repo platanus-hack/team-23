@@ -1,6 +1,5 @@
 import os
 import json
-import requests
 from flask import Flask, request, jsonify
 import constants
 from flask_cors import CORS
@@ -40,6 +39,7 @@ def hello_world():
 @cache.cached(query_string=True)
 def query():
     question = request.args.get("question")
+    lang = request.args.get("lang", "es") or "es"
     per_page = int(request.args.get("per_page", constants.PER_PAGE_LIMIT))
     if per_page > constants.PER_PAGE_LIMIT:
         per_page = constants.PER_PAGE_LIMIT
@@ -64,7 +64,7 @@ def query():
 
     prompt_works = [
         {
-            "doi": works["doi"],
+            "url": works["id"],
             "title": works["title"],
             "abstract": (
                 inverted_index_to_text_v2(inverted_idx=works["abstract_inverted_index"])
@@ -73,7 +73,6 @@ def query():
             "cited_by_count": works["cited_by_count"],
         }
         for works in works["results"]
-        if works.get("doi") is not None
     ]
     query_works = [
         {
@@ -109,6 +108,7 @@ def query():
     # PROMPT TO GENERATE SUMMARY
     with open(constants.SUMMARY_PROMPT_PATH, 'r', encoding='utf-8') as file:
         summary_prompt = file.read().strip()
+        summary_prompt = summary_prompt.replace("{{LANG}}", lang)
         summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(prompt_works))
         summary_prompt = summary_prompt.replace("{{INPUT}}", question)
 
@@ -154,7 +154,7 @@ def works():
 
     works_partial = [
         {
-            "doi": work["doi"],
+            "url": work["id"],
             "title": work["title"],
             "abstract": (
                 inverted_index_to_text_v2(inverted_idx=work["abstract_inverted_index"])
@@ -167,7 +167,7 @@ def works():
 
     if not works_partial:
         return jsonify({"error": "failed to get works"}), 500
-    
+
     return jsonify(works_partial), 200
 
 
