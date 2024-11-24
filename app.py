@@ -53,8 +53,6 @@ def query():
                     inverted_index_to_text(inverted_idx=work["abstract_inverted_index"])
                 )
             ),
-            "pub_year": work["publication_year"],
-            "authorships": work["authorships"],
             "pub_date": work["publication_date"],
             "cited_by_count": work["cited_by_count"],
         }
@@ -67,7 +65,6 @@ def query():
     total_count = works.get("meta", {}).get("count", 0)
 
     # PROMPT TO GENERATE SUMMARY
-
     summary_prompt = requests.get("https://raw.githubusercontent.com/antidiestro/etai-prompts/refs/heads/main/summarize.md").text
     summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(works_partial))
     summary_prompt = summary_prompt.replace("{{INPUT}}", question)
@@ -87,13 +84,12 @@ def query():
                 {
                     "doi": work["doi"],
                     "title": work["title"],
-                    "pub_date": work["pub_date"],
-                    "pub_year": work["pub_year"],
+                    "pub_date": work["publication_date"],
+                    "pub_year": work["publication_year"],
                     "authorships": work["authorships"],
                     "cited_by_count": work["cited_by_count"],
-                }
-                for work in works_partial
-            ],
+                } for work in works["results"]
+            ]
         }
     ), 200
 
@@ -127,7 +123,8 @@ def works():
                     inverted_index_to_text(inverted_idx=work["abstract_inverted_index"])
                 )
             ),
-            "pub_year": work["publication_year"],
+            "pub_date": work["publication_date"],
+            "cited_by_count": work["cited_by_count"],
         }
         for work in works["results"]
     ]
@@ -140,6 +137,9 @@ def works():
 
 @app.route('/facts', methods=['GET'])
 def facts():
+    """
+    factos
+    """
     question = request.args.get("question")
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
