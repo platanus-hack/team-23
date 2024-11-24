@@ -5,3 +5,4 @@ Werkzeug==2.2.2
 anthropic==0.39.0
 python-dotenv==1.0.1
 Flask-Cors==5.0.0
+Flask-Caching==2.3.0
