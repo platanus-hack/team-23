@@ -190,7 +190,7 @@ function App() {
             <h2>Quizás te puede interesar:</h2>
             <div>
               {summary.related_queries.map((question: string) => (
-                <p key={question.slice(0, 10)}>{question}</p>
+                <p key={question}>{question}</p>
               ))}
             </div>
           </div>
