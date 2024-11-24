@@ -17,11 +17,9 @@ load_dotenv()
 config = {
     "DEBUG": True,
     "CACHE_TYPE": "redis",
-    "CACHE_REDIS_URL": os.getenv('REDIS_TEMPORARY_URL'),
+    "CACHE_REDIS_URL": os.getenv("REDIS_TEMPORARY_URL"),
     "CACHE_DEFAULT_TIMEOUT": 300,
-    "CACHE_OPTIONS": {
-        "ssl_cert_reqs": None
-    }
+    "CACHE_OPTIONS": {"ssl_cert_reqs": None},
 }
 
 app = Flask(__name__)
@@ -35,7 +33,7 @@ def hello_world():
     return "hello platanus first commit!"
 
 
-@app.route('/query', methods=['GET'])
+@app.route("/query", methods=["GET"])
 @cache.cached(query_string=True)
 def query():
     question = request.args.get("question")
@@ -48,7 +46,7 @@ def query():
         return jsonify({"error": "question parameter is required"}), 400
 
     # PROMPT TO GET TERMS FROM A QUESTION
-    with open(constants.KEYWORDS_PROMPT_PATH, 'r', encoding='utf-8') as file:
+    with open(constants.KEYWORDS_PROMPT_PATH, "r", encoding="utf-8") as file:
         prompt = file.read().strip()
         prompt = prompt.replace("{{QUERY}}", question)
 
@@ -59,7 +57,8 @@ def query():
         return jsonify({"error": "failed to get terms"}), 500
 
     works = get_works_by_keywords(
-        keywords=terms["keywords"], per_page=per_page,
+        keywords=terms["keywords"],
+        per_page=per_page,
     )
 
     prompt_works = [
@@ -92,7 +91,8 @@ def query():
             ),
             "location_url": (
                 works["primary_location"].get("landing_page_url", {})
-                if works["primary_location"] is not None else None
+                if works["primary_location"] is not None
+                else None
             ),
             "authorships": works["authorships"],
             "cited_by_count": works["cited_by_count"],
@@ -106,13 +106,15 @@ def query():
     total_count = works.get("meta", {}).get("count", 0)
 
     # PROMPT TO GENERATE SUMMARY
-    with open(constants.SUMMARY_PROMPT_PATH, 'r', encoding='utf-8') as file:
+    with open(constants.SUMMARY_PROMPT_PATH, "r", encoding="utf-8") as file:
         summary_prompt = file.read().strip()
         summary_prompt = summary_prompt.replace("{{LANG}}", lang)
         summary_prompt = summary_prompt.replace("{{QUERY}}", json.dumps(prompt_works))
         summary_prompt = summary_prompt.replace("{{INPUT}}", question)
 
-    summary_response = send_prompt_to_clients(prompt=summary_prompt, use_powerful_model=True)
+    summary_response = send_prompt_to_clients(
+        prompt=summary_prompt, use_powerful_model=True
+    )
 
     try:
         summary = json.loads(summary_response)
@@ -120,17 +122,20 @@ def query():
         summary = "Failed to get summary"
         print(summary, summary_response)
 
-    return jsonify(
-        {
-            "summary": summary,
-            "keywords": terms["keywords"],
-            "total_count": total_count,
-            "works_partial": query_works
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "summary": summary,
+                "keywords": terms["keywords"],
+                "total_count": total_count,
+                "works_partial": query_works,
+            }
+        ),
+        200,
+    )
 
 
-@app.route('/works', methods=['GET'])
+@app.route("/works", methods=["GET"])
 def works():
     question = request.args.get("question")
     per_page = int(request.args.get("per_page", 100))
@@ -140,7 +145,7 @@ def works():
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
 
-    with open(constants.KEYWORDS_PROMPT_PATH, 'r', encoding='utf-8') as file:
+    with open(constants.KEYWORDS_PROMPT_PATH, "r", encoding="utf-8") as file:
         terms_prompt = file.read().strip()
         terms = terms_prompt.replace("{{QUERY}}", question)
 
@@ -149,7 +154,7 @@ def works():
     terms = json.loads(ans)
     if not terms:
         return jsonify({"error": "failed to get terms"}), 500
-    
+
     works = get_works_by_keywords(keywords=terms["keywords"], per_page=per_page)
 
     works_partial = [
@@ -171,7 +176,7 @@ def works():
     return jsonify(works_partial), 200
 
 
-@app.route('/facts', methods=['GET'])
+@app.route("/facts", methods=["GET"])
 @cache.cached(query_string=True)
 def facts():
     """
@@ -181,7 +186,7 @@ def facts():
     if not question:
         return jsonify({"error": "question parameter is required"}), 400
 
-    with open(constants.FACTS_PROMPT_PATH, 'r', encoding='utf-8') as file:
+    with open(constants.FACTS_PROMPT_PATH, "r", encoding="utf-8") as file:
         facts_prompt = file.read().strip()
         facts_prompt = facts_prompt.replace("{{QUERY}}", question)
 
@@ -197,5 +202,5 @@ def facts():
     return jsonify(facts_), 200
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
