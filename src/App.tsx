@@ -36,11 +36,12 @@ interface Publication {
   title: string;
 }
 
-/* interface KeyFinding {
-  summary: string; 
-  title: string;  
-};
+interface Finding {
+  summary: string;
+  title: string;
+}
 
+/*
 interface Summary {
   clean_query: string;
   introduction_summary: string; 
@@ -81,9 +82,18 @@ function App() {
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [workStats, setWorkStats] = useState<null | AnalysisResult>(null);
+  const [openDropdowns, setOpenDropdowns] = useState<Finding["title"][]>([]);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
+  };
+
+  const toggleDropdown = (index: Finding["title"]) => {
+    if (openDropdowns.includes(index)) {
+      setOpenDropdowns(openDropdowns.filter((id) => id !== index));
+    } else {
+      setOpenDropdowns([...openDropdowns, index]);
+    }
   };
 
   const { data, refetch } = useQuery(
@@ -157,7 +167,19 @@ function App() {
 
           <div>
             <h3>Descubrimientos más recientes</h3>
-            <ReactMarkdown>{summary.research_findings_summary}</ReactMarkdown>
+            {summary.key_findings.map((finding: Finding) => (
+              <div
+                key={finding.title}
+                onClick={() => toggleDropdown(finding.title)}
+              >
+                <h4>{finding.title}</h4>
+                {openDropdowns.includes(finding.title) && (
+                  <p>
+                    <ReactMarkdown>{finding.summary}</ReactMarkdown>
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
 
           <div>
