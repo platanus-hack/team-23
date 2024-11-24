@@ -96,7 +96,7 @@ function App() {
     }
   };
 
-  const { data, refetch } = useQuery(
+  const { data, refetch, isLoading } = useQuery(
     ["searchSummary"],
     () => fetchSearchResults(inputRef.current?.value || ""),
     {
@@ -132,24 +132,28 @@ function App() {
 
   return (
     <div id="results">
-      <div>
-        <form onSubmit={handleSubmit}>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={handleInput}
-            placeholder="Por qué el cilantro es tan rico"
-          />
-          <button type="submit">Buscar</button>
-        </form>
-      </div>
-      {facts && (
+      {!data && (
         <div>
-          {facts.map((fact: string, index: number) => (
-            <div key={index}>
-              <h4>{fact}</h4>
-            </div>
-          ))}
+          <form onSubmit={handleSubmit}>
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={handleInput}
+              placeholder="Por qué el cilantro es tan rico"
+            />
+            <button type="submit">Buscar</button>
+          </form>
+        </div>
+      )}
+      {isLoading && (
+        <div>
+          {facts
+            ? facts.map((fact: string, index: number) => (
+                <div key={index}>
+                  <h4>{fact}</h4>
+                </div>
+              ))
+            : "Loading..."}
         </div>
       )}
       {summary && (
