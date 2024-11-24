@@ -8,7 +8,7 @@ export default function MainSummary() {
   const summaryText = summary!.query_answer ?? summary!.introduction_summary;
 
   return (
-    <div className="mb-10">
+    <div>
       {!!totalPublicationsCount && (
         <div className="text-[15px] text-neutral-400 mb-2">
           {new Intl.NumberFormat().format(totalPublicationsCount)} artículos

@@ -8,18 +8,18 @@ export default function Search() {
 
   return (
     <div className="min-h-dvh flex flex-col justify-center">
-      <div className="text-orange-600 text-[32px] leading-tight mb-6">
+      <div className="text-orange-600 text-[32px] leading-tight mb-6 sm:text-center sm:mb-8">
         {preventWidows("¿Qué quieres aprender hoy?") + " 🤓"}
       </div>
       <form
-        className="w-full"
+        className="w-full mx-auto max-w-xl"
         onSubmit={(e) => {
           e.preventDefault();
           setQuery(inputRef.current?.value || "");
         }}
       >
         <input
-          className="w-full bg-white border border-zinc-400/30 placeholder-zinc-400 rounded-lg h-[52px] shadow-xl shadow-zinc-600/5 px-4 focus:outline-black"
+          className="w-full bg-white border border-zinc-400/30 placeholder-zinc-400 rounded-lg h-[52px] shadow-xl shadow-zinc-600/5 px-4 focus:outline-black sm:h-[64px] sm:px-5 sm:text-lg"
           placeholder="Haz una pregunta o ingresa un tema..."
           ref={inputRef}
           type="text"

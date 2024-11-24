@@ -3,7 +3,7 @@
 }
 
 .container {
-  @apply w-full max-w-2xl mx-auto px-6 flex flex-col min-h-dvh;
+  @apply relative w-full max-w-2xl mx-auto px-6 flex flex-col min-h-dvh;
 }
 
 .header {

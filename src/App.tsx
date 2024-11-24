@@ -10,7 +10,7 @@ function App() {
 
   return (
     <AppContext.Provider value={appContextValue}>
-      <div className={`header ${!query && "absolute"}`}>
+      <div className={`header ${!query && "absolute w-full"}`}>
         <img src="/logo.svg" alt="logo" className="h-5" />
       </div>
       {query ? <Results /> : <Search />}
