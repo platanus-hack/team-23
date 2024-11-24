@@ -77,6 +77,7 @@ def query():
     ]
     query_works = [
         {
+            "id": works["id"],
             "doi": works["doi"],
             "title": works["title"],
             "pub_date": works["publication_date"],
@@ -84,7 +85,14 @@ def query():
             "abstract": (
                 inverted_index_to_text_v2(inverted_idx=works["abstract_inverted_index"])
             ),
-            "location_display_name": works.get("primary_location", {}).get("source", {}).get("display_name"),
+            "location_display_name": (
+                works["primary_location"].get("source").get("display_name", {})
+                if works["primary_location"].get("source") is not None else None
+            ),
+            "location_url": (
+                works["primary_location"].get("landing_page_url", {})
+                if works["primary_location"] is not None else None
+            ),
             "authorships": works["authorships"],
             "cited_by_count": works["cited_by_count"],
         }
