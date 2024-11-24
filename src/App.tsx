@@ -5,6 +5,57 @@ import ReactMarkdown from "react-markdown";
 import getWorksStats from "./scripts/processArticles";
 import type { AnalysisResult } from "./scripts/processArticles";
 
+interface Institution {
+  institution_ids: string[];
+  raw_affiliation_string: string;
+}
+
+interface Author {
+  display_name: string;
+  id: string;
+  orcid?: string;
+}
+
+interface Authorship {
+  affiliations: Institution[];
+  author: Author;
+  author_position: string;
+  countries: string[];
+  institutions: object[];
+  is_corresponding: boolean;
+  raw_affiliation_strings: string[];
+  raw_author_name: string;
+}
+
+interface Publication {
+  authorships: Authorship[];
+  cited_by_count: number;
+  doi: string;
+  pub_date: string;
+  pub_year: number;
+  title: string;
+}
+
+/* interface KeyFinding {
+  summary: string; 
+  title: string;  
+};
+
+interface Summary {
+  clean_query: string;
+  introduction_summary: string; 
+  key_findings: KeyFinding[]; 
+  query_answer: string;
+  related_queries: string[]; 
+};
+
+interface Results {
+  keywords: string[]; 
+  summary: Summary;   
+  total_count: number; 
+  works_partial: Publication[]; 
+}; */
+
 const fetchSearchResults = async (query: string) => {
   console.log("search");
   const response = await fetch(
@@ -67,7 +118,7 @@ function App() {
 
   const facts = factsData?.facts;
   const summary = data?.summary;
-  console.log(summary);
+  const bibliography = data?.works_partial;
 
   return (
     <div id="results">
@@ -112,8 +163,8 @@ function App() {
           <div>
             <h2>Quizás te puede interesar:</h2>
             <div>
-              {summary.related_queries.map((question, index) => (
-                <p key={index}>{question}</p>
+              {summary.related_queries.map((question: string) => (
+                <p key={question.slice(0, 10)}>{question}</p>
               ))}
             </div>
           </div>
@@ -176,6 +227,30 @@ function App() {
                 ))} */}
             </div>
           </div>
+        </div>
+      )}
+      {bibliography && (
+        <div>
+          <h2>Referencias</h2>
+          <ul>
+            {bibliography.slice(0, 10).map((publication: Publication) => (
+              <li key={publication.doi}>
+                <a href={""}>{publication.title}</a>
+                <p>
+                  {[
+                    publication.authorships.find(
+                      (authorship: Authorship) =>
+                        authorship.author_position === "first"
+                    )!.raw_author_name +
+                      (publication.authorships.length > 1 && "  et al."),
+                    publication.pub_year && publication.pub_year,
+                    publication.cited_by_count &&
+                      `Citado por ${publication.cited_by_count}`,
+                  ].join(" · ")}
+                </p>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
