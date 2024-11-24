@@ -37,6 +37,9 @@ export interface Publication {
   pub_date: string;
   pub_year: number;
   title: string;
+  abstract: string;
+  location_display_name: string;
+  location_url: string;
 }
 
 interface Finding {
