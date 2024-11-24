@@ -1,0 +1,10 @@
+{ 
+    // nombre de su producto / solución
+    "project_name": "et AI.",
+    // descripción de una frase y directa al grano de la solución
+    "oneliner": "Encuentra, comprende y navega la literatura académica.",
+    // url al logo de proyecto. mínimo 200x200, png. puede estar hosteado en el mismo repo.
+    "logo_url": "https://raw.githubusercontent.com/platanus-hack/team-23/refs/heads/main/etai-square-bg.png",
+    // url para acceder a su app. si es apk u otro, link de descarga directa.
+    "app_url": "https://etai-front-wine.vercel.app/"
+}
