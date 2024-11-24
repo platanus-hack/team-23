@@ -129,10 +129,10 @@ function App() {
   const facts = factsData?.facts;
   const summary = data?.summary;
   const bibliography = data?.works_partial;
-
+  const showInput = !(data || isLoading);
   return (
     <div id="results">
-      {!(data || isLoading) && (
+      {showInput && (
         <div>
           <form onSubmit={handleSubmit}>
             <input
