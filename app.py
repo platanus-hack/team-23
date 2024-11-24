@@ -84,6 +84,7 @@ def query():
             "abstract": (
                 inverted_index_to_text_v2(inverted_idx=works["abstract_inverted_index"])
             ),
+            "location_display_name": works["primary_location"].get("source", {}).get("display_name"),
             "authorships": works["authorships"],
             "cited_by_count": works["cited_by_count"],
         }
