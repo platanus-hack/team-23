@@ -13,7 +13,7 @@ def inverted_index_to_text(inverted_idx: dict):
     for _, term in position_term_pairs:
         reconstructed_string.append(term)
 
-    return ' '.join(reconstructed_string)
+    return " ".join(reconstructed_string)
 
 
 def inverted_index_to_text_v2(inverted_idx: dict, max_words: int = 200):
@@ -32,7 +32,7 @@ def inverted_index_to_text_v2(inverted_idx: dict, max_words: int = 200):
         reconstructed_string.append(term)
         word_count += 1
 
-    return ' '.join(reconstructed_string)
+    return " ".join(reconstructed_string)
 
 
 def extract_tag_content(text, tag_name: str):

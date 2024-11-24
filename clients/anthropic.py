@@ -3,12 +3,8 @@ from anthropic import Anthropic
 from anthropic import Anthropic, APIError, APITimeoutError, RateLimitError
 
 
-
 class AnthropicClient:
-    MODELS = [
-        "claude-3-5-sonnet-20241022",
-        "claude-3-5-haiku-20241022"
-    ]
+    MODELS = ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"]
     POWERFUL_MODELS = ["claude-3-5-sonnet-20241022"]
     LIGHT_MODELS = ["claude-3-5-haiku-20241022"]
 
@@ -39,8 +35,10 @@ class AnthropicClient:
             return self.LIGHT_MODELS
         return self.MODELS
 
-    def send_prompt(self, prompt, use_powerful_model=False, use_light_model = False):
-        models = self.get_models(use_powerful_model=use_powerful_model, use_light_model=use_light_model)
+    def send_prompt(self, prompt, use_powerful_model=False, use_light_model=False):
+        models = self.get_models(
+            use_powerful_model=use_powerful_model, use_light_model=use_light_model
+        )
         for model in models:
             response = self._create_message_for_claude(content=prompt, model=model)
             if response:
