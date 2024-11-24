@@ -10,7 +10,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  @apply text-neutral-800 selection:bg-orange-600 selection:text-white;
+  @apply text-neutral-700 selection:bg-orange-600 selection:text-white;
 }
 
 a {
@@ -62,7 +62,23 @@ button:focus-visible {
   @apply transition-all duration-300;
 }
 
+.markdown-body p {
+  @apply my-4;
+}
+
+.markdown-body p:first-child:last-child {
+  @apply my-0;
+}
+
 .markdown-body b,
 .markdown-body strong {
-  @apply font-semibold;
+  @apply text-black font-medium;
+}
+
+.height-calc-auto {
+  height: max-content;
+}
+
+h2 {
+  @apply text-[20px] font-semibold text-black mb-4;
 }

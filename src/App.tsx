@@ -7,6 +7,7 @@ import CitationLink from "./components/CitationLink";
 import PublicationDetailsModal from "./components/PublicationDetailsModal";
 import AppearingTextRandomizer from "./components/AppearingTextRandomizer";
 import getLinksFromMarkdown from "./scripts/getLinksFromMarkdown";
+import preventWidows from "./scripts/preventWidows";
 
 interface SummaryResponse {
   summary: Summary;
@@ -145,9 +146,9 @@ function App() {
   );
 
   const facts = factsData?.facts;
+  const totalCount = data?.total_count;
   const summary = data?.summary;
   const showInput = !(data || isLoading);
-  const showButton = !showInput && !isLoading;
   const bibliography: Publication[] | undefined = data?.works_partial;
 
   const extractedLinks = useMemo(
@@ -188,7 +189,7 @@ function App() {
   );
 
   return (
-    <div id="results">
+    <div className="py-4">
       {showInput && (
         <div>
           <form onSubmit={handleSubmit}>
@@ -201,9 +202,6 @@ function App() {
             <button type="submit">Buscar</button>
           </form>
         </div>
-      )}
-      {showButton && (
-        <button onClick={() => window.location.reload()}>Nueva búsqueda</button>
       )}
       {isLoading && (
         <div>
@@ -222,10 +220,22 @@ function App() {
       )}
       {summary && (
         <div>
-          <div>
-            <h1>
-              {summary.query_answer ? summary.clean_query : summary.title}
+          <div className="mb-10">
+            {!!totalCount && (
+              <div className="text-[15px] text-neutral-400 mb-2">
+                {new Intl.NumberFormat().format(totalCount)} artículos
+                encontrados
+              </div>
+            )}
+
+            <h1 className="text-[22px] leading-7 font-semibold text-black">
+              {preventWidows(
+                summary.query_answer ? summary.clean_query : summary.title
+              )}
             </h1>
+
+            <div className="w-[50px] h-[2px] bg-orange-500 mt-5 mb-7" />
+
             <ReactMarkdown
               className="markdown-body"
               components={{
@@ -239,25 +249,37 @@ function App() {
           </div>
 
           <div>
-            <h3>Hallazgos clave</h3>
+            <h2>Hallazgos clave</h2>
             {summary.key_findings.map((finding: Finding) => (
               <div
                 key={finding.title}
-                onClick={() => toggleDropdown(finding.title)}
+                className="bg-[#F5F3EE] mb-3 py-4 rounded-md"
               >
-                <h4>{finding.title}</h4>
-                {openDropdowns.includes(finding.title) && (
-                  <p>
-                    <ReactMarkdown
-                      className="markdown-body"
-                      components={{
-                        a: mappedAnchorComponent,
-                      }}
-                    >
-                      {finding.summary}
-                    </ReactMarkdown>
-                  </p>
-                )}
+                <div
+                  className="flex items-center gap-4 justify-between px-5 text-black"
+                  onClick={() => toggleDropdown(finding.title)}
+                >
+                  <div className="font-medium">
+                    {preventWidows(finding.title)}
+                  </div>
+                  <span
+                    className={`material-symbols-sharp text-[16px] with-transition ${
+                      openDropdowns.includes(finding.title) && "rotate-90"
+                    }`}
+                  >
+                    arrow_forward_ios
+                  </span>
+                </div>
+                <ReactMarkdown
+                  className={`markdown-body with-transition overflow-hidden px-5 mt-2 ${
+                    !openDropdowns.includes(finding.title) && "hidden"
+                  }`}
+                  components={{
+                    a: mappedAnchorComponent,
+                  }}
+                >
+                  {finding.summary}
+                </ReactMarkdown>
               </div>
             ))}
           </div>
@@ -313,20 +335,6 @@ function App() {
                   </a>
                 </div>
               ))}
-            </div>
-          </div>
-          <div>
-            <h2>¿Cuándo se investigó más sobre este tópico?</h2>
-            <div>
-              {/* {Object.entries(workStats.yearDistribution)
-                .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
-                .map(([year, count]) => (
-                  <div key={year}>
-                    <p>
-                      {year} ({count})
-                    </p>
-                  </div>
-                ))} */}
             </div>
           </div>
         </div>
