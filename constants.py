@@ -3,3 +3,6 @@ OPEN_ALEX_DEFAULT_SELECT = "id,doi,title,authorships,abstract_inverted_index,pub
 OPEN_ALEX_DEFAULT_FILTER = "has_abstract:true"
 TAG_NAME = "response"
 PER_PAGE_LIMIT = 50
+
+KEYWORDS_PROMPT_PATH = "./prompts/KEYWORDS_PROMPT.txt"
+SUMMARY_PROMPT_PATH = "./prompts/SUMMARY_PROMPT.txt"
