@@ -24,7 +24,7 @@ A modified version of the user query with improved grammar and punctuation, addi
 
 ## introduction_summary
 
-A markdown snippet, consisting of two paragraphs containing a general introduction to the overall topic discussed in the articles, generated using your general knowledge of it. They should be around 300-400 characters long. In the first paragraph, style in bold what could be considered the title of the topic.
+A markdown snippet, consisting of up to four paragraphs containing a general introduction to the overall topic discussed in the articles, generated using your general knowledge of it. They should be around 300-400 characters long. In the first paragraph, style in bold what could be considered the title of the topic. In every other paragraph, style in bold the main idea of said paragraph. The bold portion does not need necessarily have to be near the beginning of the paragraph.
 
 ## key_findings
 
@@ -40,7 +40,7 @@ Avoid outputting repetitive findings that are too similar to each other. Priorit
 If either:
 a. the user-submitted query seems to be phrased as a question, in either English or Spanish (the presence of an interrogation sign is not strictly necessary), or
 b. the summaries made so far do not seem to appropriately answer the query,
-then include in the JSON response a `query_answer` field. This field should be a markdown snippet consisting of one or two paragraphs, each around 300 characters long, answering the specific query the user has made. The statements in the paragraphs must be cited in the same format as the `key_findings` field.
+then include in the JSON response a `query_answer` field. This field should be a markdown snippet consisting of up to four paragraphs, each around 300-500 characters long, answering the specific query the user has made. The statements in the paragraphs must be cited in the same format as the `key_findings` field.
 
 ## related_queries
 
@@ -48,5 +48,6 @@ An array containing a mixture of search terms and questions that the user can ch
 
 # Important considerations
 
+- When deciding how many paragraphs to return in the `introduction_summary` and `query_answer` fields, make sure to avoid outputting repetitive or vague information.
 - Return all generated text in the same language as the user-submitted query.
 - Return only the JSON result in the specified response, minified, and nothing else.
