@@ -1,12 +1,28 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useMemo } from "react";
 import { useQuery } from "react-query";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
 import getWorksStats from "./scripts/processArticles";
-import type { AnalysisResult } from "./scripts/processArticles";
 import CitationLink from "./components/CitationLink";
 import PublicationDetailsModal from "./components/PublicationDetailsModal";
 import AppearingTextRandomizer from "./components/AppearingTextRandomizer";
+import getLinksFromMarkdown from "./scripts/getLinksFromMarkdown";
+
+interface SummaryResponse {
+  summary: Summary;
+  keywords: string[];
+  total_count: number;
+  works_partial: Publication[];
+}
+
+interface Summary {
+  clean_query: string;
+  introduction_summary: string;
+  key_findings: Finding[];
+  query_answer?: string;
+  related_queries: string[];
+  title: string;
+}
 
 interface Institution {
   institution_ids: string[];
@@ -31,6 +47,7 @@ export interface Authorship {
 }
 
 export interface Publication {
+  id: string;
   authorships: Authorship[];
   cited_by_count: number;
   doi: string;
@@ -47,8 +64,7 @@ interface Finding {
   title: string;
 }
 
-const fetchSearchResults = async (query: string) => {
-  console.log("search");
+const fetchSummary = async (query: string): Promise<SummaryResponse> => {
   const response = await fetch(
     `https://etai-backend-537a5149f0b1.herokuapp.com/query?question=${query}`
   );
@@ -68,14 +84,20 @@ const fetchFacts = async (query: string) => {
   return response.json();
 };
 
+const fetchStats = async (query: string) => {
+  return await getWorksStats(query);
+};
+
 function App() {
   const [input, setInput] = useState("");
+  const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const [workStats, setWorkStats] = useState<null | AnalysisResult>(null);
   const [openDropdowns, setOpenDropdowns] = useState<Finding["title"][]>([]);
   const [openPublication, setOpenPublication] = useState<Publication | null>(
     null
   );
+
+  const enabled = query.trim().length > 0;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -89,35 +111,38 @@ function App() {
     }
   };
 
-  const { data, refetch, isLoading } = useQuery(
-    ["searchSummary"],
-    () => fetchSearchResults(inputRef.current?.value || ""),
+  const { data, isLoading } = useQuery(
+    ["searchSummary", query],
+    () => fetchSummary(query),
     {
-      enabled: false,
+      enabled,
     }
   );
 
-  const { data: factsData, refetch: refetchFacts } = useQuery(
-    ["searchFacts"],
-    () => fetchFacts(inputRef.current?.value || ""),
+  const { data: factsData } = useQuery(
+    ["searchFacts", query],
+    () => fetchFacts(query),
     {
-      enabled: false,
+      enabled,
     }
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputRef.current && inputRef.current.value.trim().length > 0) {
-      refetchFacts();
-      setTimeout(() => {
-        refetch().then(() => {
-          getWorksStats(data?.keywords?.join(" OR ")).then((result) => {
-            setWorkStats(result);
-          });
-        });
-      }, 500);
+  const { data: workStatsData } = useQuery(
+    ["workStats", query],
+    () => fetchStats(query),
+    {
+      enabled,
     }
-  };
+  );
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (input.trim().length === 0) return;
+      setQuery(input);
+    },
+    [input]
+  );
 
   const facts = factsData?.facts;
   const summary = data?.summary;
@@ -125,17 +150,41 @@ function App() {
   const showButton = !showInput && !isLoading;
   const bibliography: Publication[] | undefined = data?.works_partial;
 
+  const extractedLinks = useMemo(
+    () =>
+      summary
+        ? [
+            ...(summary.query_answer
+              ? getLinksFromMarkdown(summary.query_answer)
+              : []),
+            ...summary.key_findings
+              .map((finding) => getLinksFromMarkdown(finding.summary))
+              .flat(),
+          ]
+        : [],
+    [summary]
+  );
+
+  const filteredBibliography = useMemo(
+    () =>
+      extractedLinks.map(
+        (url) => bibliography?.find((pub) => pub.id === url) as Publication
+      ) ?? [],
+    [bibliography, extractedLinks]
+  );
+
   const mappedAnchorComponent = useCallback(
     (props: JSX.IntrinsicElements["a"]) => (
       <CitationLink
         {...props}
-        onCitationClick={(doi) => {
-          const publication = bibliography?.find((pub) => pub.doi === doi);
+        bibliography={filteredBibliography}
+        onCitationClick={(id) => {
+          const publication = bibliography?.find((pub) => pub.id === id);
           if (publication) setOpenPublication(publication);
         }}
       />
     ),
-    [bibliography]
+    [bibliography, filteredBibliography]
   );
 
   return (
@@ -178,6 +227,7 @@ function App() {
               {summary.query_answer ? summary.clean_query : summary.title}
             </h1>
             <ReactMarkdown
+              className="markdown-body"
               components={{
                 a: mappedAnchorComponent,
               }}
@@ -199,6 +249,7 @@ function App() {
                 {openDropdowns.includes(finding.title) && (
                   <p>
                     <ReactMarkdown
+                      className="markdown-body"
                       components={{
                         a: mappedAnchorComponent,
                       }}
@@ -221,12 +272,12 @@ function App() {
           </div>
         </div>
       )}
-      {workStats && (
+      {workStatsData && (
         <div>
           <div>
             <h2>¿Dónde se investiga más este tema?</h2>
             <div>
-              {Object.entries(workStats.countryDistribution)
+              {Object.entries(workStatsData.countryDistribution)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5)
                 .map(([country, count]) => (
@@ -241,7 +292,7 @@ function App() {
           <div>
             <h2>¿Quiénes investigan más sobre este tópico?</h2>
             <div>
-              {workStats.topAuthors.slice(0, 5).map((author) => (
+              {workStatsData.topAuthors.slice(0, 5).map((author) => (
                 <div key={author.id}>
                   <p>
                     {author.display_name} ({author.count})
@@ -253,7 +304,7 @@ function App() {
           <div>
             <h2>¿Y en qué universidades?</h2>
             <div>
-              {workStats.topInstitutions.slice(0, 5).map((institution) => (
+              {workStatsData.topInstitutions.slice(0, 5).map((institution) => (
                 <div key={institution.id}>
                   <a href={institution.id}>
                     <p>
@@ -280,11 +331,11 @@ function App() {
           </div>
         </div>
       )}
-      {bibliography && (
+      {filteredBibliography.length > 0 && (
         <div>
           <h2>Bibliografía</h2>
           <ul>
-            {bibliography.slice(0, 10).map((publication: Publication) => {
+            {filteredBibliography.map((publication: Publication) => {
               const author =
                 publication.authorships.find(
                   (authorship: Authorship) =>
@@ -292,7 +343,7 @@ function App() {
                 ) || publication.authorships[0];
               if (!author) return null;
               return (
-                <li key={publication.doi}>
+                <li key={publication.id}>
                   <a href={""}>{publication.title}</a>
                   <p>
                     {[
