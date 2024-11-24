@@ -81,6 +81,9 @@ def query():
             "title": works["title"],
             "pub_date": works["publication_date"],
             "pub_year": works["publication_year"],
+            "abstract": (
+                inverted_index_to_text_v2(inverted_idx=works["abstract_inverted_index"])
+            ),
             "authorships": works["authorships"],
             "cited_by_count": works["cited_by_count"],
         }
