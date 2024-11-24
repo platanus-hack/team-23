@@ -22,7 +22,9 @@ export default function Button({
       className={`w-full flex items-center justify-center rounded-full gap-2 ${variantClasses[variant]}`}
     >
       <div>{label}</div>
-      {icon && <span className="material-symbols-sharp">open_in_new</span>}
+      {icon && (
+        <span className="material-symbols-sharp text-[22px]">{icon}</span>
+      )}
     </button>
   );
 }
